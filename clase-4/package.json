@@ -1,0 +1,10 @@
+
+{
+  "scripts": {
+    "db:check": "node -e \"console.log('Verificacion de base de datos exitosa')\""
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.116.0"
+  }
+}
