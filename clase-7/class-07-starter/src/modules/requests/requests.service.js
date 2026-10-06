@@ -38,6 +38,24 @@ function notFound(id) {
   return new AppError('resource', 'REQUEST_NOT_FOUND', `Request ${id} does not exist.`);
 }
 
+// 'low, medium or high' — a list that reads as a sentence, built from the
+// same array that validates, so the message cannot drift from the rule.
+function humanList(values) {
+  return `${values.slice(0, -1).join(', ')} or ${values.at(-1)}`;
+}
+
+// INC-702 · First defense: the APPLICATION validates the contract before
+// any SQL runs, so an invalid priority is a 400 and not a 500.
+// Second defense: the CHECK constraint requests_priority_check stays in the
+// database — it protects the data if this code ever fails or another
+// process writes to the table.
+function assertValidPriority(priority) {
+  if (!PRIORITIES.includes(priority)) {
+    throw new AppError('contract', 'INVALID_PRIORITY',
+      `Priority must be ${humanList(PRIORITIES)}.`);
+  }
+}
+
 function forbidden(message) {
   return new AppError('forbidden', 'FORBIDDEN', message);
 }
@@ -94,6 +112,11 @@ export async function createRequest(actor, input) {
     throw new AppError('contract', 'TITLE_REQUIRED', 'A request needs a non-empty title.');
   }
 
+  // Same rule as PATCH: creation must not be the way around the validation.
+  if (priority !== undefined) {
+    assertValidPriority(priority);
+  }
+
   // Creation is a unit of work: the request AND its birth history
   // (NULL -> open) happen together or not at all. The owner and the
   // history actor come from the authenticated identity.
@@ -135,6 +158,9 @@ export async function patchRequest(actor, id, body) {
   if (changes.status !== undefined && !isValidStatus(changes.status)) {
     throw new AppError('contract', 'INVALID_STATUS',
       `Unknown status "${changes.status}". Valid values: ${STATUSES.join(', ')}.`);
+  }
+  if (changes.priority !== undefined) {
+    assertValidPriority(changes.priority);
   }
   if (changes.title !== undefined) changes.title = changes.title.trim();
 

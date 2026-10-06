@@ -1,18 +1,14 @@
-// OPS-703 · Not-found middleware (guided skeleton).
+// OPS-703 · Not-found middleware.
 //
-// Goal: when NO route matched, answer with the same JSON error contract as
-// everything else instead of Express's default HTML page.
+// Registered AFTER every route: it runs only when nothing matched, and it
+// answers with the same JSON contract instead of Express's default HTML
+// page. It forwards a TYPED error so the central handler produces the
+// response — one translation, not two.
 //
-// TODO(OPS-703): forward a typed error so the central error handler
-// produces the response:
-//   next(new AppError('resource', 'ROUTE_NOT_FOUND', '...generic message...'));
-//
-// Questions before coding:
-//   - Where must this middleware live so it runs ONLY when nothing matched?
-//   - Why is echoing the requested path back into the message a bad idea?
+// The message is generic on purpose: echoing the requested path back would
+// confirm which routes exist to whoever is probing the API.
 import { AppError } from '../app-error.js';
 
 export function notFound(req, res, next) {
-  // TODO(OPS-703): replace this pass-through with the real implementation.
-  next();
+  next(new AppError('resource', 'ROUTE_NOT_FOUND', 'The requested resource does not exist.'));
 }

@@ -1,27 +1,25 @@
-// OPS-703 · Request ID middleware (guided skeleton).
+// OPS-703 · Request ID middleware.
 //
-// Goal: every request gets ONE identifier that travels with it — into the
-// logs, into every error body, and back to the client in the X-Request-Id
-// response header. It identifies the REQUEST, not the user.
+// ONE identifier per REQUEST travels with it: into the logs, into every
+// error body, and back to the client in X-Request-Id. It identifies the
+// request, not the user — and it is not a secret.
 //
-// TODO(OPS-703): implement the middleware. Checklist:
-//   [ ] Read the optional X-Request-Id header sent by the client.
-//   [ ] Accept it ONLY if it matches a limited, boring format
-//       (alphanumeric plus . _ -, at most 64 characters). A header is
-//       client input: never trust it as-is.
-//   [ ] Otherwise generate one with crypto.randomUUID()
-//       (https://nodejs.org/api/crypto.html#cryptorandomuuidoptions).
-//       Suggested shape: `req_${randomUUID()}`.
-//   [ ] Store it in req.requestId so later middlewares and handlers can use it.
-//   [ ] Send it back with res.set('X-Request-Id', ...).
-//   [ ] Call next().
-//
-// Questions before coding:
-//   - Is a request id a secret? Would the JWT work as one? Why not?
-//   - What could a client do with an UNLIMITED header echoed into logs?
+// A client MAY send its own trace id so a frontend can correlate both
+// sides, but only in a boring, bounded shape. A header is untrusted input:
+// echoing arbitrary text into every log line is how log injection and log
+// forging happen, so anything outside this format is replaced instead of
+// trusted.
 import { randomUUID } from 'node:crypto';
 
+const ACCEPTABLE_CLIENT_ID = /^[A-Za-z0-9._-]{1,64}$/;
+
 export function requestId(req, res, next) {
-  // TODO(OPS-703): replace this pass-through with the real implementation.
+  const provided = req.headers['x-request-id'];
+
+  req.requestId = typeof provided === 'string' && ACCEPTABLE_CLIENT_ID.test(provided)
+    ? provided
+    : `req_${randomUUID()}`;
+
+  res.set('X-Request-Id', req.requestId);
   next();
 }
