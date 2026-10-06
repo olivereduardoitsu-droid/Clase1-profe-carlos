@@ -1,30 +1,38 @@
-// Policy tests — INCOMPLETE, on purpose. This is the payoff of the whole
-// class: once canClaimRequest depends on nothing, its entire behavior
-// matrix runs here with plain objects. No HTTP. No PostgreSQL. No server.
-//
-// Convert each stub as you implement the policy. Look at the matrix in
-// the FEATURE-801 brief: every row becomes one assertion.
+// Policy tests run against plain objects, without HTTP or PostgreSQL.
 import test from 'node:test';
+import assert from 'node:assert/strict';
+import { canClaimRequest } from '../src/modules/requests/request.policy.js';
 
-test('an agent can claim an open, unassigned request', { todo: true }, () => {
-  // canClaimRequest({ actor: agent, request: openUnassigned })
-  //   -> { allowed: true }
+const agent = { role: 'agent', userId: 'agent-1' };
+const openUnassigned = { status: 'open', assignedTo: null };
+
+test('an agent can claim an open, unassigned request', () => {
+  assert.deepEqual(canClaimRequest({ actor: agent, request: openUnassigned }), { allowed: true });
 });
 
-test('a requester cannot claim, even an open request', { todo: true }, () => {
-  // -> { allowed: false, reason: 'NOT_AGENT' }
+test('a requester cannot claim, even an open request', () => {
+  assert.deepEqual(canClaimRequest({
+    actor: { role: 'requester', userId: 'requester-1' }, request: openUnassigned
+  }), { allowed: false, reason: 'NOT_AGENT' });
 });
 
-test('an already assigned request cannot be claimed again', { todo: true }, () => {
-  // -> { allowed: false, reason: 'ALREADY_ASSIGNED' }
+test('an already assigned request cannot be claimed again', () => {
+  assert.deepEqual(canClaimRequest({
+    actor: agent, request: { status: 'in_progress', assignedTo: 'agent-2' }
+  }), { allowed: false, reason: 'ALREADY_ASSIGNED' });
 });
 
-test('a request that is not open cannot be claimed', { todo: true }, () => {
-  // Cover in_progress, resolved, closed and cancelled in one loop.
-  // -> { allowed: false, reason: 'NOT_OPEN' }
+test('a request that is not open cannot be claimed', () => {
+  for (const status of ['in_progress', 'resolved', 'closed', 'cancelled']) {
+    assert.deepEqual(canClaimRequest({
+      actor: agent, request: { status, assignedTo: null }
+    }), { allowed: false, reason: 'NOT_OPEN' });
+  }
 });
 
-test('the role rule wins over the state rules', { todo: true }, () => {
-  // requester + assigned request -> the reported reason is NOT_AGENT.
-  // (The caller answers 403 before any state conflict.)
+test('the role rule wins over the state rules', () => {
+  assert.deepEqual(canClaimRequest({
+    actor: { role: 'requester', userId: 'requester-1' },
+    request: { status: 'in_progress', assignedTo: 'agent-1' }
+  }), { allowed: false, reason: 'NOT_AGENT' });
 });

@@ -147,8 +147,8 @@ const CHECKS = [
 
   ['Baseline', 'Existing tests pass', async () => {
     try {
-      execSync(`node --test --test-concurrency=1 'test/*.test.js'`, {
-        cwd: ROOT, stdio: 'pipe', timeout: 180000, shell: '/bin/bash'
+      execSync('node --test --test-concurrency=1', {
+        cwd: ROOT, stdio: 'pipe', timeout: 180000
       });
       return null;
     } catch (error) {

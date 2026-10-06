@@ -8,9 +8,9 @@ Generado automáticamente — completa las secciones marcadas con [COMPLETAR] an
 * studentId: [COMPLETAR — tu identificador de estudiante, sin datos personales extra]
 * promptVersion: ITSU-CHECKPOINT-01-07-1.0
 * rubricVersion: BACKEND-01-07-R1
-* generatedAt: 2026-10-06T14:35:50.301Z (EXECUTED_NOW)
+* generatedAt: 2026-10-06T16:53:28.535Z (EXECUTED_NOW)
 * repoRoot: Clase1-profe-carlos-1
-* commit: cf39418 (EXECUTED_NOW)
+* commit: 0034532 (EXECUTED_NOW)
 * repositorioRemoto: https://github.com/olivereduardoitsu-droid/Clase1-profe-carlos.git (EXECUTED_NOW) — verifica que sea TU repositorio antes de continuar
 * modeloUtilizado: [COMPLETAR después de ejecutar el prompt]
 
@@ -23,6 +23,7 @@ del repositorio remoto del estudiante y sus respuestas. La ausencia de
 commits aquí no debe interpretarse como evidencia faltante.
 
 ```text
+0034532 cuestionario
 cf39418 clase 7 hecha
 834dbce clase7
 1a4e646 clase 6
@@ -30,7 +31,6 @@ cf39418 clase 7 hecha
 aeab626 se completo la base de datos con supabase
 f231818 clase 2
 1296c7e clase 2
-ade1e4d version mejorada del servidor
 ```
 
 ## Evidencia por clase
@@ -354,7 +354,7 @@ FINAL RESULT: PASSED
 
 * Validadores disponibles (clases 1-7): activities\clase6\class-06-starter\scripts\validate-class-06.js, activities\class-08-starter\scripts\validate-class-06.js, activities\class-08-starter\scripts\validate-class-07.js, clase 5\request-api-v5-starter\scripts\validate-class-05.js, clase-7\class-07-starter\scripts\validate-class-06.js, clase-7\class-07-starter\scripts\validate-class-07.js, clase6\scripts\validate-class-06.js
 * Carpetas de pruebas: NOT_FOUND
-* Último commit antes del taller: cf39418
+* Último commit antes del taller: 0034532
 
 ## Cuestionario diagnóstico (responde aquí, 3-6 líneas cada una)
 

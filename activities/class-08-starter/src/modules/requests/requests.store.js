@@ -11,6 +11,7 @@ const REQUEST_COLUMNS = `
   description,
   priority,
   status,
+  assigned_to,
   created_by,
   created_at,
   updated_at
@@ -46,12 +47,20 @@ export async function findAll(filters = {}, db = pool) {
   return result.rows;
 }
 
-export async function findById(id, db = pool) {
+async function selectById(id, db, lock) {
   const result = await db.query(
-    `SELECT ${REQUEST_COLUMNS} FROM requests WHERE id = $1`,
+    `SELECT ${REQUEST_COLUMNS} FROM requests WHERE id = $1${lock ? ' FOR UPDATE' : ''}`,
     [id]
   );
   return result.rows[0] ?? null;
+}
+
+export function findById(id, db = pool) {
+  return selectById(id, db, false);
+}
+
+export function findByIdForUpdate(id, db) {
+  return selectById(id, db, true);
 }
 
 export async function insertRequest({ title, description, priority, createdBy }, db = pool) {
@@ -85,6 +94,17 @@ export async function updateRequest(id, changes, db = pool) {
      WHERE id = $${values.length}
      RETURNING ${REQUEST_COLUMNS}`,
     values
+  );
+  return result.rows[0] ?? null;
+}
+
+export async function assignRequestToAgent(id, agentId, db = pool) {
+  const result = await db.query(
+    `UPDATE requests
+     SET assigned_to = $1, status = 'in_progress', updated_at = CURRENT_TIMESTAMP
+     WHERE id = $2 AND assigned_to IS NULL AND status = 'open'
+     RETURNING ${REQUEST_COLUMNS}`,
+    [agentId, id]
   );
   return result.rows[0] ?? null;
 }

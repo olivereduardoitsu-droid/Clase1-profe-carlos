@@ -7,19 +7,24 @@ import { withTransaction } from '../../database/transaction.js';
 import {
   findAll,
   findById,
+  findByIdForUpdate,
   insertRequest,
   updateRequest,
-  insertHistoryEvent
+  assignRequestToAgent,
+  insertHistoryEvent,
+  findHistory
 } from './requests.store.js';
-import { mapRequestRow } from './request.mapper.js';
+import { mapRequestRow, mapHistoryEventRow } from './request.mapper.js';
 import { STATUSES, isValidStatus, isTerminal, canTransition } from './request-status.js';
 import {
   canListAllRequests,
   canViewRequest,
+  canViewHistory,
   canCreateRequest,
   canEditContent,
   canChangePriority,
-  canChangeStatus
+  canChangeStatus,
+  canClaimRequest
 } from './request.policy.js';
 import { AppError } from '../../app-error.js';
 
@@ -28,7 +33,7 @@ const UPDATABLE_FIELDS = ['title', 'description', 'priority', 'status'];
 
 // Fields the server controls on requests. Sending them is a contract
 // violation, answered explicitly — never silently ignored.
-const SERVER_CONTROLLED_FIELDS = ['id', 'createdBy', 'createdAt', 'updatedAt', 'changedBy'];
+const SERVER_CONTROLLED_FIELDS = ['id', 'createdBy', 'createdAt', 'updatedAt', 'changedBy', 'assignedTo'];
 
 // A foreign resource answers exactly like a missing one: same status,
 // same code, same message. A different answer would confirm it exists.
@@ -86,6 +91,51 @@ export async function getRequest(actor, id) {
   const request = mapRequestRow(row);
   if (!canViewRequest(actor, request)) throw notFound(id);
   return request;
+}
+
+export async function getHistory(actor, id) {
+  const row = await findById(id);
+  if (!row) throw notFound(id);
+
+  const request = mapRequestRow(row);
+  if (!canViewHistory(actor, request)) throw notFound(id);
+
+  const events = await findHistory(id);
+  return events.map(mapHistoryEventRow);
+}
+
+export async function claimRequest(actor, id, body) {
+  rejectServerControlledFields(body);
+
+  const row = await withTransaction(async (client) => {
+    const current = await findByIdForUpdate(id, client);
+    if (!current) throw notFound(id);
+
+    const decision = canClaimRequest({ actor, request: mapRequestRow(current) });
+    if (!decision.allowed) {
+      if (decision.reason === 'NOT_AGENT') {
+        throw forbidden('Only agents can claim requests.');
+      }
+      if (decision.reason === 'ALREADY_ASSIGNED') {
+        throw new AppError('domain', 'REQUEST_ALREADY_ASSIGNED',
+          `Request ${id} is already assigned.`);
+      }
+      throw new AppError('domain', 'REQUEST_NOT_OPEN',
+        `Request ${id} is not open and cannot be claimed.`);
+    }
+
+    const updated = await assignRequestToAgent(id, actor.userId, client);
+    await insertHistoryEvent({
+      requestId: id,
+      type: 'request_claimed',
+      fromStatus: current.status,
+      toStatus: 'in_progress',
+      changedBy: actor.userId
+    }, client);
+    return updated;
+  });
+
+  return mapRequestRow(row);
 }
 
 export async function createRequest(actor, input) {
