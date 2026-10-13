@@ -112,20 +112,43 @@ ESTADO EN EL COMMIT `class-09-analysis` (todavía NO hay cambio de código):
 - `activities/class-09/work-log.md` — este registro (baseline, reproducción,
   decisiones).
 
-CAMBIOS PENDIENTES (se commitean como `class-09-fix`):
-- `src/modules/requests/requests.service.js` — restaurar `canViewRequest` en
-  `getRequest` + quitar `TEMP(REQ-442)`.
-- `test/request-access-policy.test.js` — convertir los 3 stubs.
-- `test/request-detail.test.js` — convertir los 2 stubs.
+ESTADO EN EL COMMIT `class-09-fix` (220af6d, pusheado):
+- `src/modules/requests/requests.service.js` — `getRequest` ahora llama a
+  `canViewRequest(actor, request)` y devuelve `notFound(id)` cuando la policy
+  niega; se eliminó el comentario `TEMP(REQ-442)`. Sin cambios en store, rutas,
+  migraciones ni capas nuevas.
+- `test/request-access-policy.test.js` — 3 stubs convertidos (agent true, owner
+  true, ajeno false).
+- `test/request-detail.test.js` — 2 stubs HTTP convertidos (ajeno -> 404
+  `REQUEST_NOT_FOUND`; `?userId=<owner>` -> 404; identidad solo del token).
+
+ESTADO FINAL (commit de entrega `class-09-submission`):
+- `activities/class-09/validation-evidence.txt` — salida completa del validador
+  (14/14 PASSED) más el environment check.
+- `activities/class-09/work-log.md` — este registro actualizado.
 
 ## How I verified it
 
-(Ciclo exacto en el commit `class-09-fix`; aquí el estado hasta el análisis.)
+Ciclo rojo/verde, en este orden:
 - Baseline: `npm run doctor` (7/7 PASS) · `npm run db:migrate` (5 SKIPPED) ·
-  `npm run db:seed` (repetible) · `npm test` (67 tests: 62 pass, 0 fail, 5 todo).
+  `npm run db:seed` (repetible) · suite 62 pass / 0 fail / 5 todo (el runner
+  por defecto cuenta 67 porque suma los 5 `todo` y 3 helpers `test-*.js`; el
+  glob real `test/*.test.js` son 64 `test()`).
 - Reproducción: salidas reales con server en `http://127.0.0.1:3001`
   (owner 200 / ajeno 200 BUG / history ajeno 404 / inexistente 404 / agent 200).
-- Reporto las DOS salidas del contraste en el dossier sección 8 y 3.
+- ROJO (antes del fix): con los 5 stubs ya convertidos, `test:detail` falla
+  `200 !== 404` en las dos regresiones; `test:policy` ya pasa (policy pura).
+  Reporto las dos salidas del contraste en el dossier secciones 3 y 8.
+- VERDE (después del fix): `npm run test:policy` 8/8 · `npm run test:detail`
+  6/6 · suite completa 64/64 pass, 0 fail, 0 todo.
+- Validador final: `npm run validate:class-09` -> **FINAL RESULT: PASSED**
+  (14/14 checks). Salida cruda en `activities/class-09/validation-evidence.txt`.
+- Nota de entorno (Windows): el check 13 lanza la suite con
+  `execSync(..., { shell: '/bin/bash' })`; en Windows `/bin/bash` no existe y
+  daba `ENOENT`. Lo resolví en el ENTORNO (no en el validador): dejé un bash
+  alcanzable en `/bin/bash` (Git Bash vía `C:\bin\bash.exe` más junctions
+  `C:\usr`, `C:\etc`, `C:\mingw64` -> instalación de Git). El validador del
+  curso corre SIN modificar; ninguna lógica de check fue alterada.
 
 ## What I still cannot explain
 
@@ -134,6 +157,6 @@ CAMBIOS PENDIENTES (se commitean como `class-09-fix`):
   del dossier, que nunca debe quedar vacía.)
 - Por qué el historial se protege y el detalle no — me parece un accidente de
   un refactor anterior, pero no tengo evidencia de la intención.
-- Si en CI el validador corre igual en entorno Linux/bash; en Windows el check
-  de la suite usa `shell: '/bin/bash'` y hay que confirmar el entorno exacto
-  del evaluador.
+- Por qué el runner de Node reporta 67 tests mientras el glob `test/*.test.js`
+  cuenta 64: el descubrimiento por defecto suma los 5 `todo` y 3 helpers
+  `test-*.js`; lo verifico contando `test()` archivo por archivo.
