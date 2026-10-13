@@ -16,17 +16,14 @@ const owner = { userId: 'uuid-owner', role: 'requester' };
 const stranger = { userId: 'uuid-stranger', role: 'requester' };
 const requestOwnedByOwner = { id: 42, status: 'open', createdBy: 'uuid-owner' };
 
-test('an agent can view any request', { todo: true }, () => {
-  // Convert me: canViewRequest(agent, requestOwnedByOwner) should be true.
-  void agent; void requestOwnedByOwner; void assert;
+test('an agent can view any request', () => {
+  assert.equal(canViewRequest(agent, requestOwnedByOwner), true);
 });
 
-test('the owner requester can view their own request', { todo: true }, () => {
-  // Convert me: canViewRequest(owner, requestOwnedByOwner) should be true.
-  void owner;
+test('the owner requester can view their own request', () => {
+  assert.equal(canViewRequest(owner, requestOwnedByOwner), true);
 });
 
-test('a different requester cannot view the request', { todo: true }, () => {
-  // Convert me: canViewRequest(stranger, requestOwnedByOwner) should be false.
-  void stranger;
+test('a different requester cannot view the request', () => {
+  assert.equal(canViewRequest(stranger, requestOwnedByOwner), false);
 });
