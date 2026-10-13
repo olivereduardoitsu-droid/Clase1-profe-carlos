@@ -1,0 +1,98 @@
+{ "placeholder": "REPLACE this file with BLOQUE 2 (only the JSON) from your evaluation" }
+{
+  "protocolVersion": "ITSU-KNOWLEDGE-09-1.0",
+  "rubricVersion": "BACKEND-01-08-K1",
+  "evaluationId": "K09-olivereduardo-itsu-f04c2ab",
+  "studentId": "olivereduardo-itsu",
+  "commit": "f04c2ab",
+  "variant": "B",
+  "status": "COMPLETE",
+  "action": "SUPPORT",
+  "questions": [
+    {
+      "questionId": "Q1",
+      "topics": ["HTTP", "request flow"],
+      "levels": { "conceptual": 1, "grounding": 1, "reasoning": 1, "verification": 1 },
+      "evidence": ["no estoy seguro me puedes orientar pero si no me equivoco la ruta que manejan vendria siendo .js , controller aunque depende del del fraemwok que se utilice"],
+      "strength": "Reconoce la existencia conceptual de controladores en arquitecturas web.",
+      "gap": "Incapacidad para detallar el contrato del endpoint PATCH /requests/:id y ubicar sus archivos correspondientes en el repositorio.",
+      "rectification": "",
+      "confidence": "high"
+    },
+    {
+      "questionId": "Q2",
+      "topics": ["Invariants", "Transactions"],
+      "levels": { "conceptual": 1, "grounding": 1, "reasoning": 1, "verification": 1 },
+      "evidence": ["la consistencia que debe cumplirse es el estado de la consistencia de las referencias", "no estoy seguro pero creo que vendrian siendo la update export entre otras"],
+      "strength": "Asocia la noción de consistencia con el estado de los datos.",
+      "gap": "Dificultad para formular la invariante entre requests y request_history, y falta de precisión sobre transacciones y archivos del repositorio.",
+      "rectification": "",
+      "confidence": "high"
+    },
+    {
+      "questionId": "Q3",
+      "topics": ["AuthN/AuthZ", "JWT"],
+      "levels": { "conceptual": 2, "grounding": 1, "reasoning": 1, "verification": 1 },
+      "evidence": ["la diferencia principal entre autenticacion y autorizacion es que la primer pide la informacion requerida para acceder peor la otra es la que determina y da el permiso", "se suele resolver de forma centralizada en un middleware"],
+      "strength": "Diferencia conceptualmente de forma clara la autenticación de la autorización.",
+      "gap": "No logra identificar los archivos concretos (ej. authenticate.js, request.policy.js) ni explicar con precisión los riesgos de confianzas en payloads.",
+      "rectification": "",
+      "confidence": "high"
+    },
+    {
+      "questionId": "Q4",
+      "topics": ["Diagnosis", "State Machine"],
+      "levels": { "conceptual": 1, "grounding": 2, "reasoning": 1, "verification": 1 },
+      "evidence": ["revisaria primero el request status.js"],
+      "strength": "Identifica correctamente el archivo request-status.js dentro de la estructura de módulos al ser guiado.",
+      "gap": "Dificultad para estructurar hipótesis de diagnóstico técnico ante fallas de lógica de negocio (status codes 200 vs 409).",
+      "rectification": "Localización precisa del archivo de transiciones tras la pista facilitada.",
+      "confidence": "high"
+    },
+    {
+      "questionId": "Q5",
+      "topics": ["Error Handling", "AppError"],
+      "levels": { "conceptual": 1, "grounding": 1, "reasoning": 1, "verification": 1 },
+      "evidence": ["es buena practicva utilizar clases de error personalizadas para distinguir los errores comunes... y que ventaja aporta no te sabria decir"],
+      "strength": "Identifica de forma intuitiva el uso de errores personalizados para distinguir excepciones.",
+      "gap": "No logra explicar el rol del middleware global de errores ni la ventaja del desacoplamiento de metadatos de respuesta HTTP.",
+      "rectification": "",
+      "confidence": "high"
+    }
+  ],
+  "priorityGaps": [
+    "Definición y especificación completa de contratos de API REST (método, path, headers, params, respuestas).",
+    "Manejo de invariantes de base de datos y transacciones ACID en arquitecturas multicapa.",
+    "Mapeo de la lógica de autenticación y autorización (RBAC/ABAC) a archivos concretos del proyecto."
+  ],
+  "strengths": [
+    "Comprensión teórica fundamental de la diferencia entre autenticación y autorización.",
+    "Orientación progresiva en la navegación de la estructura de archivos bajo src/modules/requests/."
+  ],
+  "recommendedStudyActions": [
+    "Repasar la estructura y definición formal de contratos HTTP RESTful, practicando la especificación de request/response para endpoints con modificaciones de estado.",
+    "Analizar el uso de transacciones SQL (BEGIN/COMMIT/ROLLBACK) y cómo se implementan en src/database/transaction.js para garantizar atomicidad.",
+    "Estudiar la separación entre middleware de autenticación (src/middleware/authenticate.js) y políticas de autorización (src/modules/requests/request.policy.js)."
+  ],
+  "reviewSignals": ["NONE"],
+  "teacherReview": {
+    "priority": "medium",
+    "oralVerificationRecommended": false,
+    "questions": [
+      {
+        "question": "¿Cómo se garantiza que la actualización de la tabla 'requests' y la inserción en 'request_history' ocurran de forma atómica en el código?",
+        "expectedAnswer": "Encapsulando ambas operaciones de base de datos dentro de una misma transacción (usando la abstracción de transaction.js) con BEGIN y COMMIT, ejecutando ROLLBACK si alguna falla."
+      },
+      {
+        "question": "¿En qué archivo y mediante qué mecanismo se restringe qué transiciones de estado son válidas en la aplicación?",
+        "expectedAnswer": "En src/modules/requests/request-status.js (o request.policy.js), donde se valida la matriz/mapa de estados permitidos antes de ejecutar la actualización."
+      }
+    ],
+    "minimumExpectedAnswers": [
+      "Debe mencionarse el uso de transacciones explícitas (BEGIN, COMMIT, ROLLBACK).",
+      "Debe citarse la validación previa contra la estructura de transiciones permitidas en request-status.js."
+    ],
+    "reason": "El estudiante demuestra comprensión intuitiva y teórica básica, pero presenta dificultades para ubicar la implementación exacta en el código y formalizar contratos de endpoints.",
+    "digest": "Evaluación completada. El estudiante muestra claridad en la distinción teórica de AuthN/AuthZ e identificación de archivos tras guía, pero requiere reforzar contratos de API REST, transacciones y manejo de errores centralizado."
+  }
+}
