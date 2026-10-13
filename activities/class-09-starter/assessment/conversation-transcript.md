@@ -1654,8 +1654,8 @@ prompt hasta este aviso) y guárdala en assessment/conversation-transcript.md.
 I submitted the complete evaluation conversation without intentionally
 removing questions, follow-ups, corrections, or evaluator messages.
 
-* Firmado (studentId): [COMPLETAR]
-* Fecha: [COMPLETAR]
+* Firmado (studentId): [Oliver Eduardo Osio Ramirez]
+* Fecha: [13/10/2026]
 
 > Esta declaración no se presenta como mecanismo infalible. Es un
 > compromiso académico explícito.
